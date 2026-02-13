@@ -100,6 +100,29 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
+
+        /* Image mask for consistent icon shapes */
+        .icon-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));
+        }
+        
+        /* Unfidmatk specific inverted style for the sketch look */
+        .unfidmatk-icon {
+            filter: invert(1) grayscale(1) contrast(2) drop-shadow(0 0 15px rgba(248, 113, 113, 0.4));
+        }
+
+        /* Link specific styling in modal */
+        .description-link {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: color 0.2s;
+        }
+        .description-link:hover {
+            color: #f87171;
+        }
     </style>
 </head>
 <body class="p-4 md:p-10 lg:p-16">
@@ -140,6 +163,22 @@
     <script>
         const aiData = [
             {
+                no: "U-1.0",
+                name: "Unfidmatk-AI 1.0",
+                type: "未解読記号生成知能",
+                rarity: "Abstract Art",
+                origin: "Deep Web / Generative Lab",
+                description: "「どこかの国の文字のようでありながら、世界のどこにも存在しない記号」を生成することに特化したAI。視覚的な不気味さと美しさの境界を攻める。生成された記号には、もっともらしい『失われた意味』の解説文が自動で添えられる。",
+                link: "https://shun240523-stack.github.io/Symbolencyclopedia/",
+                usage: "ロゴデザインのインスピレーション、架空言語の設計、あるいは解読不能な怪文書の作成に使用される。その不可解な曲線は、時に見る者の深層心理に訴えかける。",
+                cost: "API 1リクエスト 0.5円 / 月額制なし",
+                status: { logic: 40, creative: 95, utility: 50, speed: 15, value: 40 },
+                speedCompare: "筆ペンでゆっくりと「呪い」をしたためる速さ",
+                color: "#f87171",
+                icon: "./unfidmatk.png",
+                isImage: true
+            },
+            {
                 no: "∞",
                 name: "GemGPT Core",
                 type: "汎用ビジネス統括知能",
@@ -152,6 +191,20 @@
                 speedCompare: "1秒で文庫本数ページを書き換える速さ",
                 color: "#eab308",
                 icon: "☯️"
+            },
+            {
+                no: "C-100",
+                name: "ChatGPT OSS 100M",
+                type: "遺産継承・軽量知能",
+                rarity: "Legacy / Open Source",
+                origin: "Global Community (Optimized)",
+                description: "かつての「GPT-3」級の日常会話能力を、わずか100Mパラメータに凝縮したモデル。現代のスマホでも400tpsという神速で駆動する。知識量は膨大だが、パラメータ削減の影響で複雑なプログラミングや論理パズルの解決には向かない。",
+                usage: "個人のローカルデバイス。チャットボットや、高速なテキスト生成が必要な簡易エージェントとして利用される。完全にオフラインで動作可能。",
+                cost: "無料 (Community Drive) / 1円あたり ∞ トークン",
+                status: { logic: 55, creative: 70, utility: 88, speed: 400, value: 100 },
+                speedCompare: "瞬きひとつで数千文字を生成する神速の残像",
+                color: "#10b981",
+                icon: "✳️"
             },
             {
                 no: "L-01",
@@ -196,20 +249,6 @@
                 icon: "π"
             },
             {
-                no: "12",
-                name: "Focus-Guardian",
-                type: "集中力矯正エージェント",
-                rarity: "Productivity",
-                origin: "Ed-Tech Startups",
-                description: "ユーザーの誘惑を断ち切るために、85tpsという「説教に最適なスピード」で通知を浴びせかける。",
-                usage: "スマホのMDMとしてインストール。一度有効にすると、学習目標を達成するまで解除不能。",
-                cost: "目標達成で返金されるデポジット制 / 実質 1円あたり50トークン",
-                status: { logic: 90, creative: 10, utility: 95, speed: 85, value: 50 },
-                speedCompare: "機械的な早口言葉程度の速さ",
-                color: "#4ade80",
-                icon: "👁️"
-            },
-            {
                 no: "21",
                 name: "Algorithm-Escape",
                 type: "レコメンド攪乱ツール",
@@ -249,14 +288,22 @@
         let typingInterval = null;
 
         function createCard(ai) {
-            const valueLabel = ai.no.startsWith("L-0") ? "FREE" : `${ai.status.value}t/¥`;
+            const isFree = ai.no.startsWith("L-0") || ai.no.startsWith("C-");
+            const valueLabel = isFree ? "FREE" : (ai.status.value === 0 ? "NONE" : `${ai.status.value}t/¥`);
+            
+            let iconContent = ai.isImage 
+                ? `<img src="${ai.icon}" alt="AI Icon" class="icon-img ${ai.no === 'U-1.0' ? 'unfidmatk-icon' : ''} h-24 w-24 mx-auto object-contain">` 
+                : `<div class="text-6xl text-center select-none" style="filter: drop-shadow(0 4px 12px ${ai.color}33)">${ai.icon}</div>`;
+
             return `
                 <div class="ai-card rounded-[2.5rem] p-6 md:p-8 cursor-pointer fade-in" onclick="showDetails('${ai.no}')">
                     <div class="flex justify-between items-start mb-6">
                         <span class="pixel-font text-[10px] text-slate-500 opacity-60">ID: ${ai.no}</span>
                         <span class="rarity-tag bg-white/5 text-slate-400 border border-white/10">${ai.rarity}</span>
                     </div>
-                    <div class="text-6xl mb-6 text-center select-none" style="filter: drop-shadow(0 4px 12px ${ai.color}33)">${ai.icon}</div>
+                    <div class="mb-6 flex justify-center items-center h-24">
+                        ${iconContent}
+                    </div>
                     <h2 class="text-xl font-bold mb-1 text-center tracking-tight text-white">${ai.name}</h2>
                     <p class="text-[10px] text-sky-400 text-center mb-6 font-bold uppercase tracking-widest">${ai.type}</p>
                     <div class="grid grid-cols-2 gap-4 text-[8px] text-slate-500 font-bold uppercase tracking-wider">
@@ -277,19 +324,16 @@
             `).join('');
         }
 
-        // Intersection Observer for scroll-triggered elements
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     if (entry.target.classList.contains('status-fill')) {
-                        // Animate status bars
                         const target = entry.target.getAttribute('data-target');
                         setTimeout(() => {
                             entry.target.style.width = target + '%';
                         }, 100);
                         observer.unobserve(entry.target);
                     } else if (entry.target.id === 'typing-container') {
-                        // Start typing animation
                         startTypingAnimation(entry.target);
                         observer.unobserve(entry.target);
                     }
@@ -304,8 +348,6 @@
             const text = element.getAttribute('data-full-text');
             const tps = parseInt(element.getAttribute('data-tps'));
             
-            // 1 token = roughly 4 chars. 
-            // Interval (ms) = 1000 / (tps * chars_per_token)
             const charsPerToken = 4;
             const interval = Math.max(10, 1000 / (tps * charsPerToken));
             
@@ -331,22 +373,30 @@
             const modal = document.getElementById('details-modal');
             const container = document.getElementById('modal-container');
             const content = document.getElementById('modal-content');
-            const speedPercent = Math.min((ai.status.speed / 300) * 100, 100);
+            const speedPercent = Math.min((ai.status.speed / 400) * 100, 100); 
 
-            // Stop any ongoing typing
             if (typingInterval) clearInterval(typingInterval);
+
+            let detailIcon = ai.isImage 
+                ? `<img src="${ai.icon}" alt="AI Icon" class="icon-img ${ai.no === 'U-1.0' ? 'unfidmatk-icon' : ''} h-full w-full">` 
+                : ai.icon;
+
+            // Conditional rendering for the description with a link
+            const descriptionHTML = ai.link 
+                ? `<a href="${ai.link}" target="_blank" class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5 block description-link cursor-pointer">${ai.description}</a>`
+                : `<div class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5">${ai.description}</div>`;
 
             content.innerHTML = `
                 <div class="flex flex-col gap-8 pb-10">
                     <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
-                        <div class="text-8xl md:text-[10rem] p-10 rounded-[3.5rem] bg-black/40 border border-white/5 flex items-center justify-center min-w-[180px]" style="color: ${ai.color}">
-                            ${ai.icon}
+                        <div class="text-8xl md:text-[10rem] p-6 md:p-10 rounded-[3.5rem] bg-black/40 border border-white/5 flex items-center justify-center min-w-[180px] h-[180px] md:h-[300px] w-full md:w-auto overflow-hidden" style="color: ${ai.color}">
+                            ${detailIcon}
                         </div>
                         <div class="flex-1 text-center md:text-left">
                             <h2 class="text-3xl md:text-5xl font-bold mb-3 text-white tracking-tight">${ai.name}</h2>
                             <p class="text-sky-400 font-bold mb-6 italic opacity-80">${ai.type}</p>
                             <div class="space-y-4">
-                                <div class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5">${ai.description}</div>
+                                ${descriptionHTML}
                                 <div class="bg-sky-500/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-sky-500/10">${ai.usage}</div>
                             </div>
                         </div>
@@ -373,14 +423,12 @@
             container.scrollTo({ top: 0, behavior: 'instant' });
             document.body.style.overflow = 'hidden';
 
-            // Observe status bars
             const fills = content.querySelectorAll('.status-fill');
             fills.forEach(fill => {
                 fill.style.width = '0%';
                 observer.observe(fill);
             });
 
-            // Observe typing container
             const typingBox = document.getElementById('typing-container');
             observer.observe(typingBox);
         }
