@@ -30,6 +30,19 @@
 "icon": "💾"
 },
 {
+"no": "V-03",
+"name": "Aletheia",
+"type": "真実性検証・スコアリング知能",
+"rarity": "Ethical / High-Precision",
+"origin": "Global Press Agency / Tech Ethics Board",
+"description": "SNSやニュースの信頼性を「確率」で提示するAI。情報源のスコアリング、過去の誤報履歴の重み付け、断定的表現の検出を行い、情報の濁りを排除する。",
+"usage": "ブラウザ拡張機能やジャーナリズム支援ツールとして利用。政治・報道分野で情報の真偽を瞬時に判断し、デマの拡散を防ぐための「情報のフィルター」として機能する。",
+"cost": "月額 2,800円 (法人向けプランあり) / 1円あたり 0.5 検証",
+"status": { "logic": 99, "creative": 10, "utility": 90, "speed": 45, "value": 30 },
+"speedCompare": "膨大な公文書を高速でめくり、矛盾点を次々と赤ペンでチェックする速さ",
+"color": "#60a5fa",
+"icon": "⚖️"},
+{
 "no": "W-99",
 "name": "Warship-AI",
 "type": "超弩級・軍艦偏愛知能",
