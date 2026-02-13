@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>架空AI図鑑 - Unexisting AI Encyclopedia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+
+        :root {
+            --bg-dark: #0a0f1d;
+            --card-bg: rgba(22, 28, 45, 0.8);
+            --accent-glow: rgba(56, 189, 248, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            font-family: 'Noto Sans JP', sans-serif;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .pixel-font {
+            font-family: 'DotGothic16', sans-serif;
+        }
+
+        .ai-card {
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .ai-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                border-color: rgba(56, 189, 248, 0.4);
+            }
+        }
+
+        .status-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            overflow: hidden;
+        }
+
+        .status-fill {
+            height: 100%;
+            width: 0%; 
+            transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #details-modal {
+            background: rgba(4, 7, 15, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+
+        .modal-container {
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        
+        .modal-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .rarity-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+            color: #38bdf8;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .icon-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));
+        }
+        
+        .unfidmatk-icon {
+            filter: invert(1) grayscale(1) contrast(2) drop-shadow(0 0 15px rgba(248, 113, 113, 0.4));
+        }
+
+        .description-link {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: color 0.2s;
+        }
+        .description-link:hover {
+            color: #f87171;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10 lg:p-16">
+
+    <header class="max-w-6xl mx-auto mb-12 md:mb-20 text-center">
+        <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 pixel-font bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400 tracking-tighter fade-in">
+            架空AI図鑑 202X
+        </h1>
+        <p class="text-slate-500 text-sm md:text-lg max-w-2xl mx-auto px-4">
+            シリコンバレーの巨大サーバーから、個人の自作PCで蠢く知能まで。<br class="hidden md:block">
+            技術の「起源」と「進化」を記録したアーカイブ。
+        </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 mb-20" id="ai-grid">
+        <!-- AI cards populated from JSON -->
+    </main>
+
+    <section class="max-w-4xl mx-auto mt-20 p-8 md:p-12 bg-white/5 rounded-[3rem] border border-white/10 fade-in">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="bg-sky-500/20 p-3 rounded-2xl text-sky-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+            <h3 class="text-2xl font-bold tracking-tight text-white pixel-font">AI 用語辞典</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6" id="glossary-list">
+            <!-- Glossary items -->
+        </div>
+    </section>
+
+    <div id="details-modal" class="fixed inset-0 hidden flex items-center justify-center p-4">
+        <div class="modal-container bg-slate-900 w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 relative border border-white/10 shadow-2xl" id="modal-container">
+            <button onclick="closeModal()" class="fixed md:absolute top-6 right-6 bg-slate-800 w-12 h-12 rounded-full flex items-center justify-center text-slate-300 hover:text-white text-3xl z-10">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let aiData = [];
+        const glossaryData = [
+            { term: "tps (tokens per second)", desc: "1秒間に生成される文字の断片（トークン）の数。値が大きいほど生成が速い。" },
+            { term: "ローカルAI", desc: "自分のデバイス内で完結して動作するAI。オフラインで使え、プライバシーに強い。" },
+            { term: "パラメータ数", desc: "AIの知能の規模。大きいほど高度なことができるが、動作に必要なスペックも上がる。" },
+            { term: "エッジAI", desc: "家電やセンサーなどの末端デバイス上で直接動作する超小型AI。" }
+        ];
+
+        let typingInterval = null;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (entry.target.classList.contains('status-fill')) {
+                        const target = entry.target.getAttribute('data-target');
+                        setTimeout(() => {
+                            entry.target.style.width = target + '%';
+                        }, 100);
+                        observer.unobserve(entry.target);
+                    } else if (entry.target.id === 'typing-container') {
+                        startTypingAnimation(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                }
+            });
+        }, { 
+            threshold: 0.2,
+            root: document.getElementById('modal-container')
+        });
+
+        async function init() {
+            try {
+                // JSONデータを取得（開発環境やサーバー構成に合わせてパスを調整）
+                // プレビュー環境では ai_data.json の内容を直接埋め込むか、fetchが使えない場合は変数に持たせる必要があります
+                // ここではデモンストレーションとして、fetchでの読み込みロジックを記載します
+                const response = await fetch('ai_data.json');
+                aiData = await response.json();
+                renderApp();
+            } catch (error) {
+                console.error("データの読み込みに失敗しました:", error);
+            }
+        }
+
+        function createCard(ai) {
+            const isFree = ai.no.startsWith("L-0") || ai.no.startsWith("C-");
+            const valueLabel = isFree ? "FREE" : (ai.status.value === 0 ? "NONE" : `${ai.status.value}t/¥`);
+            
+            let iconContent = ai.isImage 
+                ? `<img src="${ai.icon}" alt="AI Icon" class="icon-img ${ai.no === 'U-1.0' ? 'unfidmatk-icon' : ''} h-24 w-24 mx-auto object-contain">` 
+                : `<div class="text-6xl text-center select-none" style="filter: drop-shadow(0 4px 12px ${ai.color}33)">${ai.icon}</div>`;
+
+            return `
+                <div class="ai-card rounded-[2.5rem] p-6 md:p-8 cursor-pointer fade-in" onclick="showDetails('${ai.no}')">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="pixel-font text-[10px] text-slate-500 opacity-60">ID: ${ai.no}</span>
+                        <span class="rarity-tag bg-white/5 text-slate-400 border border-white/10">${ai.rarity}</span>
+                    </div>
+                    <div class="mb-6 flex justify-center items-center h-24">
+                        ${iconContent}
+                    </div>
+                    <h2 class="text-xl font-bold mb-1 text-center tracking-tight text-white">${ai.name}</h2>
+                    <p class="text-[10px] text-sky-400 text-center mb-6 font-bold uppercase tracking-widest">${ai.type}</p>
+                    <div class="grid grid-cols-2 gap-4 text-[8px] text-slate-500 font-bold uppercase tracking-wider">
+                        <div class="text-center">Logic: ${ai.status.logic}%</div>
+                        <div class="text-center">Value: ${valueLabel}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderApp() {
+            document.getElementById('ai-grid').innerHTML = aiData.map(ai => createCard(ai)).join('');
+            document.getElementById('glossary-list').innerHTML = glossaryData.map(item => `
+                <div class="space-y-1">
+                    <dt class="text-sky-400 text-sm font-bold pixel-font tracking-wide">${item.term}</dt>
+                    <dd class="text-slate-400 text-xs leading-relaxed">${item.desc}</dd>
+                </div>
+            `).join('');
+        }
+
+        function startTypingAnimation(element) {
+            const text = element.getAttribute('data-full-text');
+            const tps = parseInt(element.getAttribute('data-tps'));
+            const charsPerToken = 4;
+            const interval = Math.max(10, 1000 / (tps * charsPerToken));
+            
+            let i = 0;
+            element.textContent = '';
+            element.classList.add('typing-cursor');
+
+            if (typingInterval) clearInterval(typingInterval);
+            
+            typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                    element.classList.remove('typing-cursor');
+                }
+            }, interval);
+        }
+
+        function showDetails(no) {
+            const ai = aiData.find(a => a.no === no);
+            const modal = document.getElementById('details-modal');
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            const speedPercent = Math.min((ai.status.speed / 400) * 100, 100); 
+
+            if (typingInterval) clearInterval(typingInterval);
+
+            let detailIcon = ai.isImage 
+                ? `<img src="${ai.icon}" alt="AI Icon" class="icon-img ${ai.no === 'U-1.0' ? 'unfidmatk-icon' : ''} h-full w-full">` 
+                : ai.icon;
+
+            const descriptionHTML = ai.link 
+                ? `<a href="${ai.link}" target="_blank" class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5 block description-link cursor-pointer">${ai.description}</a>`
+                : `<div class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5">${ai.description}</div>`;
+
+            content.innerHTML = `
+                <div class="flex flex-col gap-8 pb-10">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+                        <div class="text-8xl md:text-[10rem] p-6 md:p-10 rounded-[3.5rem] bg-black/40 border border-white/5 flex items-center justify-center min-w-[180px] h-[180px] md:h-[300px] w-full md:w-auto overflow-hidden" style="color: ${ai.color}">
+                            ${detailIcon}
+                        </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h2 class="text-3xl md:text-5xl font-bold mb-3 text-white tracking-tight">${ai.name}</h2>
+                            <p class="text-sky-400 font-bold mb-6 italic opacity-80">${ai.type}</p>
+                            <div class="space-y-4">
+                                ${descriptionHTML}
+                                <div class="bg-sky-500/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-sky-500/10">${ai.usage}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 bg-black/20 p-8 rounded-[3rem] border border-white/5 mt-4">
+                        ${renderStat('Logic', ai.status.logic, ai.color)}
+                        ${renderStat('Speed', speedPercent, ai.color, ai.status.speed + ' tps')}
+                        ${renderStat('Creativity', ai.status.creative, ai.color)}
+                        ${renderStat('CP Value', Math.min(ai.status.value, 100), ai.color, (ai.status.value || 0) + ' t/¥')}
+                    </div>
+                    
+                    <div class="px-8 py-4 rounded-[2rem] bg-sky-500/5 border border-sky-500/10 flex items-center gap-4">
+                        <div class="text-sky-400">⚡</div>
+                        <div>
+                            <h4 class="text-xs font-bold text-sky-400 uppercase tracking-widest">Speed Context</h4>
+                            <p class="text-slate-400 text-sm italic" id="typing-container" data-full-text="「${ai.speedCompare}」" data-tps="${ai.status.speed}"></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            container.scrollTo({ top: 0, behavior: 'instant' });
+            document.body.style.overflow = 'hidden';
+
+            const fills = content.querySelectorAll('.status-fill');
+            fills.forEach(fill => {
+                fill.style.width = '0%';
+                observer.observe(fill);
+            });
+
+            const typingBox = document.getElementById('typing-container');
+            observer.observe(typingBox);
+        }
+
+        function renderStat(label, value, color, displayVal) {
+            return `
+                <div class="space-y-2">
+                    <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${label}</div>
+                    <div class="status-bar">
+                        <div class="status-fill" data-target="${value}" style="background: ${color}"></div>
+                    </div>
+                    <div class="text-right text-[10px] text-slate-400">${displayVal || value + '%'}</div>
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            if (typingInterval) clearInterval(typingInterval);
+            document.getElementById('details-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            observer.disconnect();
+        }
+
+        window.onclick = e => { if (e.target.id === 'details-modal') closeModal(); }
+        window.onload = init;
+    </script>
+</body>
+</html>
