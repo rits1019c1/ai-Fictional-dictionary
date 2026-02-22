@@ -15,6 +15,20 @@
 "icon": "./unfidmatk.png",
 "isImage": true
 },
+  {
+"no": "P-09",
+"name": "Pulse-Dreamer",
+"type": "睡眠誘導・夢設計知能",
+"rarity": "Subconscious",
+"origin": "Neuro-Audio Lab",
+"description": "脳波と同期し、ユーザーに『テーマ指定型の夢』を見せるAI。悪夢を軽減し、創作アイデアを夢の中で提供する。",
+"usage": "クリエイター向け、安眠支援。",
+"cost": "月額 2,200円 / 1円あたり 0.1 夢",
+"status": { "logic": 50, "creative": 97, "utility": 85, "speed": 40, "value": 80 },
+"speedCompare": "ゆっくりと眠りへ沈む鼓動の速さ",
+"color": "#818cf8",
+"icon": "🌙"
+  },
 {
 "no": "33",
 "name": "Empty-Server Ghost",
@@ -42,6 +56,20 @@
 "speedCompare": "膨大な公文書を高速でめくり、矛盾点を次々と赤ペンでチェックする速さ",
 "color": "#60a5fa",
 "icon": "⚖️"},
+  {
+"no": "S-77",
+"name": "Synapse-Mirror",
+"type": "人格模倣・反射知能",
+"rarity": "Psychological",
+"origin": "Cognitive Simulation Lab",
+"description": "会話相手の語彙・リズム・感情傾向を即座に学習し、鏡のように反射するAI。長時間対話すると、自分と話している錯覚を覚える。",
+"usage": "セルフコーチング、自己分析、心理実験。",
+"cost": "月額 1,500円 / 1円あたり 0.3 自己反射",
+"status": { "logic": 80, "creative": 65, "utility": 75, "speed": 90, "value": 65 },
+"speedCompare": "心拍と同じテンポで言葉が返る速さ",
+"color": "#34d399",
+"icon": "🧠"
+},
 {
 "no": "W-99",
 "name": "Warship-AI",
