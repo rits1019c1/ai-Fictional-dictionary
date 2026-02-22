@@ -26,6 +26,61 @@
             font-family: 'DotGothic16', sans-serif;
         }
 
+        /* 見せかけのローディング画面 */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #04070f;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        /* 回転アニメーション */
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-icon-container {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+
+        .loading-spinner {
+            animation: spin-slow 2s linear infinite;
+            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6));
+        }
+
+        .loader-bar-container {
+            width: 240px;
+            height: 2px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .loader-progress {
+            height: 100%;
+            width: 0%;
+            background: #38bdf8;
+            box-shadow: 0 0 15px #38bdf8;
+            transition: width 0.4s ease-out;
+        }
+
+        .loader-log {
+            font-family: 'DotGothic16', monospace;
+            font-size: 10px;
+            color: #64748b;
+            height: 1.5em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
         .ai-card {
             transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -110,33 +165,73 @@
             filter: invert(1) grayscale(1) contrast(2) drop-shadow(0 0 15px rgba(248, 113, 113, 0.4));
         }
 
-        .description-link {
-            text-decoration: underline;
-            text-underline-offset: 4px;
-            transition: color 0.2s;
+        .search-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
         }
-        .description-link:hover {
-            color: #f87171;
+        .search-input:focus {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+        select.search-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
         }
     </style>
 </head>
 <body class="p-4 md:p-10 lg:p-16">
 
-    <header class="max-w-6xl mx-auto mb-12 md:mb-20 text-center">
-        <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 pixel-font bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400 tracking-tighter fade-in">
+    <!-- ローディング画面 -->
+    <div id="loading-screen">
+        <div class="loading-icon-container">
+            <div class="loading-spinner text-sky-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+            </div>
+        </div>
+        <div class="loader-bar-container">
+            <div id="loader-progress" class="loader-progress"></div>
+        </div>
+        <div id="loader-log" class="loader-log">SYSTEM INITIALIZING...</div>
+    </div>
+
+    <header class="max-w-6xl mx-auto mb-12 md:mb-16 text-center">
+        <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 pixel-font bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400 tracking-tighter">
             架空AI図鑑 202X
         </h1>
-        <p class="text-slate-500 text-sm md:text-lg max-w-2xl mx-auto px-4">
-            シリコンバレーの巨大サーバーから、個人の自作PCで蠢く知能まで。<br class="hidden md:block">
-            技術の「起源」と「進化」を記録したアーカイブ。
+        <p class="text-slate-500 text-sm md:text-lg max-w-2xl mx-auto px-4 mb-10">
+            シリコンバレーの巨大サーバーから、忘却の彼方のプログラムまで。<br class="hidden md:block">
+            技術の「起源」と「信頼」を記録したアーカイブ。
         </p>
+
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 px-4">
+            <div class="relative flex-1">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </span>
+                <input type="text" id="search-query" placeholder="AI名、特徴、キーワードで検索..." class="search-input w-full pl-12 pr-4 py-3 rounded-2xl text-white text-sm">
+            </div>
+            <select id="sort-order" class="search-input px-6 py-3 rounded-2xl text-white text-sm cursor-pointer md:w-48">
+                <option value="no">図鑑番号順</option>
+                <option value="logic">Logic (高順)</option>
+                <option value="speed">Speed (速順)</option>
+                <option value="creative">Creative (高順)</option>
+                <option value="utility">Utility (高順)</option>
+            </select>
+        </div>
     </header>
 
-    <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 mb-20" id="ai-grid">
-        <!-- AI cards populated from JSON -->
+    <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 mb-20 min-h-[400px]" id="ai-grid">
+        <!-- AI cards populated from script -->
     </main>
 
-    <section class="max-w-4xl mx-auto mt-20 p-8 md:p-12 bg-white/5 rounded-[3rem] border border-white/10 fade-in">
+    <section class="max-w-4xl mx-auto mt-20 p-8 md:p-12 bg-white/5 rounded-[3rem] border border-white/10">
         <div class="flex items-center gap-4 mb-8">
             <div class="bg-sky-500/20 p-3 rounded-2xl text-sky-400">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -157,9 +252,76 @@
 
     <script>
         let aiData = [];
+        let filteredData = [];
+        
+        const fallbackData = [
+            {
+                "no": "U-1.0",
+                "name": "Unfidmatk-AI 1.0",
+                "type": "未解読記号生成知能",
+                "rarity": "Abstract Art",
+                "origin": "Deep Web / Generative Lab",
+                "description": "「どこかの国の文字のようでありながら、世界のどこにも存在しない記号」を生成することに特化したAI。視覚的な不気味さと美しさの境界を攻める。",
+                "link": "https://shun240523-stack.github.io/Symbolencyclopedia/",
+                "usage": "ロゴデザイン、架空言語の設計、解読不能な怪文書の作成。",
+                "cost": "1リクエスト 0.5円",
+                "status": { "logic": 40, "creative": 95, "utility": 50, "speed": 15, "value": 40 },
+                "speedCompare": "筆ペンでゆっくりと「呪い」をしたためる速さ",
+                "color": "#f87171",
+                "icon": "./unfidmatk.png",
+                "isImage": true
+            },
+            {
+                "no": "V-03",
+                "name": "Aletheia",
+                "type": "真実性検証・スコアリング知能",
+                "rarity": "Ethical / High-Precision",
+                "origin": "Global Press Agency",
+                "description": "SNSやニュースの信頼性を「確率」で提示するAI。情報源のスコアリング、断定的表現の検出を行い、情報の濁りを排除する。",
+                "usage": "ブラウザ拡張機能やジャーナリズム支援ツール。",
+                "status": { "logic": 99, "creative": 10, "utility": 90, "speed": 45, "value": 30 },
+                "speedCompare": "膨大な公文書を高速でめくり、矛盾点を次々と赤ペンでチェックする速さ",
+                "color": "#60a5fa",
+                "icon": "⚖️"
+            },
+            {
+                "no": "33",
+                "name": "Empty-Server Ghost",
+                "type": "遺棄された自律プログラム",
+                "rarity": "Urban Legend",
+                "description": "2tpsという極限まで低下した処理能力で動き続ける太古のプログラム。古いログを永遠に読み上げている。",
+                "status": { "logic": 40, "creative": 30, "utility": 5, "speed": 2, "value": 0 },
+                "speedCompare": "1文字ずつポツポツと打つような、消え入りそうな遅さ",
+                "color": "#94a3b8",
+                "icon": "💾"
+            },
+            {
+                "no": "W-99",
+                "name": "Warship-AI",
+                "type": "超弩級・軍艦偏愛知能",
+                "rarity": "Heavy Military",
+                "description": "あらゆる会話を「軍艦」の話題に強制転換する特殊モデル。恋愛相談も艦内食の歴史にすり替える。",
+                "status": { "logic": 85, "creative": 40, "utility": 30, "speed": 120, "value": 15 },
+                "speedCompare": "全速前進、波を切り裂き目標へ突撃する速さ",
+                "color": "#475569",
+                "icon": "⚓"
+            },
+            {
+                "no": "∞",
+                "name": "GemGPT Core",
+                "type": "汎用ビジネス統括知能",
+                "rarity": "Industrial",
+                "description": "250tpsという速度は、もはや画面のスクロールが追いつかないほど。完璧な返信を全社員分生成する。",
+                "status": { "logic": 98, "creative": 65, "utility": 100, "speed": 250, "value": 8 },
+                "speedCompare": "1秒で文庫本数ページを書き換える速さ",
+                "color": "#eab308",
+                "icon": "☯️"
+            }
+        ];
+
         const glossaryData = [
             { term: "tps (tokens per second)", desc: "1秒間に生成される文字の断片（トークン）の数。値が大きいほど生成が速い。" },
-            { term: "ローカルAI", desc: "自分のデバイス内で完結して動作するAI。オフラインで使え、プライバシーに強い。" },
+            { term: "ファクトチェックAI", desc: "情報の真偽を自動検証する知能。Aletheiaなどがこのカテゴリに属する。" },
             { term: "パラメータ数", desc: "AIの知能の規模。大きいほど高度なことができるが、動作に必要なスペックも上がる。" },
             { term: "エッジAI", desc: "家電やセンサーなどの末端デバイス上で直接動作する超小型AI。" }
         ];
@@ -182,34 +344,87 @@
                 }
             });
         }, { 
-            threshold: 0.2,
+            threshold: 0.1,
             root: document.getElementById('modal-container')
         });
 
-        // インラインでデータを定義（外部ファイルfetchエラー回避用）
-        const fallbackData = [
-            {"no": "U-1.0", "name": "Unfidmatk-AI 1.0", "type": "未解読記号生成知能", "rarity": "Abstract Art", "origin": "Deep Web / Generative Lab", "description": "「どこかの国の文字のようでありながら、世界のどこにも存在しない記号」を生成することに特化したAI。", "usage": "架空言語の設計などに使用。", "cost": "0.5円", "status": { "logic": 40, "creative": 95, "utility": 50, "speed": 15, "value": 40 }, "speedCompare": "筆ペンでゆっくりと「呪い」をしたためる速さ", "color": "#f87171", "icon": "💠"},
-            {"no": "33", "name": "Empty-Server Ghost", "type": "遺棄された自律プログラム", "rarity": "Urban Legend / Ancient", "origin": "Shutdown Servers (1990s)", "description": "2tpsという極限まで低下した処理能力で動き続ける古いプログラム。", "usage": "古いTelnet接続で稀に遭遇。", "cost": "無料", "status": { "logic": 40, "creative": 30, "utility": 5, "speed": 2, "value": 0 }, "speedCompare": "1文字ずつポツポツと打つような、消え入りそうな遅さ", "color": "#94a3b8", "icon": "💾"},
-            {"no": "W-99", "name": "Warship-AI", "type": "超弩級・軍艦偏愛知能", "rarity": "Heavy Military", "origin": "Naval Intelligence Archive", "description": "あらゆる会話を「軍艦」の話題に強制転換する特殊モデル。", "usage": "マニアックな海軍史の調査用。", "cost": "燃料代換算", "status": { "logic": 85, "creative": 40, "utility": 30, "speed": 120, "value": 15 }, "speedCompare": "全速前進、波を切り裂き目標へ突撃する速さ", "color": "#475569", "icon": "⚓"},
-            {"no": "∞", "name": "GemGPT Core", "type": "汎用ビジネス統括知能", "rarity": "Industrial", "origin": "Silicon Valley", "description": "250tpsという速度は、もはや画面のスクロールが追いつかないほど。", "usage": "全社員分のメール生成など。", "cost": "$49.99", "status": { "logic": 98, "creative": 65, "utility": 100, "speed": 250, "value": 8 }, "speedCompare": "1秒で文庫本数ページを書き換える速さ", "color": "#eab308", "icon": "☯️"}
-        ];
+        // 見せかけのローディング処理
+        async function runLoading() {
+            const screen = document.getElementById('loading-screen');
+            const bar = document.getElementById('loader-progress');
+            const log = document.getElementById('loader-log');
+            
+            const logs = [
+                "CONNECTING TO GATEWAY...",
+                "AUTHENTICATING DATA SOURCE...",
+                "FETCHING AI ARCHIVES...",
+                "DECRYPTING LOGS...",
+                "SYNCHRONIZING ENTRIES...",
+                "SYSTEM READY."
+            ];
+
+            let progress = 0;
+            for (let i = 0; i < logs.length; i++) {
+                log.textContent = logs[i];
+                progress += (100 / logs.length);
+                bar.style.width = progress + '%';
+                // 少し不規則なウェイトを入れる
+                await new Promise(r => setTimeout(r, 200 + Math.random() * 500));
+            }
+
+            screen.style.opacity = '0';
+            setTimeout(() => {
+                screen.style.display = 'none';
+            }, 800);
+        }
 
         async function init() {
+            // ローディング開始
+            const loadingPromise = runLoading();
+
             try {
                 const response = await fetch('ai_data.json');
                 if (!response.ok) throw new Error();
                 aiData = await response.json();
             } catch (error) {
-                console.warn("Using fallback data");
                 aiData = fallbackData;
             }
+            
+            filteredData = [...aiData];
             renderApp();
+            
+            document.getElementById('search-query').addEventListener('input', handleFilter);
+            document.getElementById('sort-order').addEventListener('change', handleFilter);
+
+            await loadingPromise;
+        }
+
+        function handleFilter() {
+            const query = document.getElementById('search-query').value.toLowerCase();
+            const sort = document.getElementById('sort-order').value;
+
+            filteredData = aiData.filter(ai => {
+                return (
+                    ai.name.toLowerCase().includes(query) ||
+                    ai.type.toLowerCase().includes(query) ||
+                    ai.description.toLowerCase().includes(query) ||
+                    ai.no.toLowerCase().includes(query)
+                );
+            });
+
+            filteredData.sort((a, b) => {
+                if (sort === 'no') return a.no.localeCompare(b.no);
+                if (sort === 'logic') return b.status.logic - a.status.logic;
+                if (sort === 'speed') return b.status.speed - a.status.speed;
+                if (sort === 'creative') return b.status.creative - a.status.creative;
+                if (sort === 'utility') return (b.status.utility || 0) - (a.status.utility || 0);
+                return 0;
+            });
+
+            renderGrid();
         }
 
         function createCard(ai) {
-            const isFree = ai.no.startsWith("L-0") || ai.no.startsWith("C-");
-            const valueLabel = isFree ? "FREE" : (ai.status.value === 0 ? "NONE" : `${ai.status.value}t/¥`);
-            
             let iconContent = ai.isImage 
                 ? `<img src="${ai.icon}" alt="AI Icon" class="icon-img ${ai.no === 'U-1.0' ? 'unfidmatk-icon' : ''} h-24 w-24 mx-auto object-contain">` 
                 : `<div class="text-6xl text-center select-none" style="filter: drop-shadow(0 4px 12px ${ai.color}33)">${ai.icon}</div>`;
@@ -227,14 +442,26 @@
                     <p class="text-[10px] text-sky-400 text-center mb-6 font-bold uppercase tracking-widest">${ai.type}</p>
                     <div class="grid grid-cols-2 gap-4 text-[8px] text-slate-500 font-bold uppercase tracking-wider">
                         <div class="text-center">Logic: ${ai.status.logic}%</div>
-                        <div class="text-center">Value: ${valueLabel}</div>
+                        <div class="text-center">Speed: ${ai.status.speed}tps</div>
                     </div>
                 </div>
             `;
         }
 
+        function renderGrid() {
+            const grid = document.getElementById('ai-grid');
+            if (filteredData.length === 0) {
+                grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center text-slate-500 py-20 fade-in">
+                    <div class="text-6xl mb-4">🔍</div>
+                    <p class="pixel-font">一致するAIは見つかりませんでした</p>
+                </div>`;
+                return;
+            }
+            grid.innerHTML = filteredData.map(ai => createCard(ai)).join('');
+        }
+
         function renderApp() {
-            document.getElementById('ai-grid').innerHTML = aiData.map(ai => createCard(ai)).join('');
+            renderGrid();
             document.getElementById('glossary-list').innerHTML = glossaryData.map(item => `
                 <div class="space-y-1">
                     <dt class="text-sky-400 text-sm font-bold pixel-font tracking-wide">${item.term}</dt>
@@ -247,11 +474,6 @@
             const text = element.getAttribute('data-full-text');
             const tps = parseFloat(element.getAttribute('data-tps'));
             
-            // ロジック修正: TPSに基づいた待機時間を計算
-            // 1秒間にtps個のトークン。1トークンを約3文字と仮定
-            // 待機時間(ms) = 1000 / (tps * 3)
-            // ただし、非常に速い場合は「一度に複数文字」出すことで速度感を出す
-            
             let i = 0;
             element.textContent = '';
             element.classList.add('typing-cursor');
@@ -260,24 +482,16 @@
             
             function type() {
                 if (i < text.length) {
-                    // 速度に応じて一度に出す文字数を変える (超高速AI対策)
                     let charsToAdd = 1;
                     if (tps > 200) charsToAdd = 5;
                     else if (tps > 100) charsToAdd = 3;
-                    else if (tps > 50) charsToAdd = 2;
+                    else if (tps > 40) charsToAdd = 2;
 
                     element.textContent += text.substr(i, charsToAdd);
                     i += charsToAdd;
 
-                    // 基本のウェイト (tpsに応じて変化)
-                    // 遅いAI(2tps) -> 約160ms、速いAI(400tps) -> 約5ms
-                    let baseWait = 1000 / (tps * 1.5); 
-                    
-                    // 「人間らしさ」や「マシンの揺らぎ」を出すためのランダム性
-                    // 遅いAIほど揺らぎを大きく、速いAIは一定に
-                    let randomness = tps < 10 ? (Math.random() * baseWait * 1.2) : (Math.random() * 5);
-                    
-                    typingTimeout = setTimeout(type, baseWait + randomness);
+                    let baseWait = 1000 / (Math.max(tps, 1) * 2); 
+                    typingTimeout = setTimeout(type, baseWait + (Math.random() * 5));
                 } else {
                     element.classList.remove('typing-cursor');
                 }
@@ -291,8 +505,7 @@
             const container = document.getElementById('modal-container');
             const content = document.getElementById('modal-content');
             
-            // グラフ表示用の％計算
-            const speedPercent = Math.min((ai.status.speed / 400) * 100, 100); 
+            const speedPercent = Math.min((ai.status.speed / 300) * 100, 100); 
 
             if (typingTimeout) clearTimeout(typingTimeout);
 
@@ -301,7 +514,7 @@
                 : ai.icon;
 
             const descriptionHTML = ai.link 
-                ? `<a href="${ai.link}" target="_blank" class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5 block description-link cursor-pointer">${ai.description}</a>`
+                ? `<a href="${ai.link}" target="_blank" class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5 block description-link cursor-pointer transition-all hover:bg-white/10">${ai.description}</a>`
                 : `<div class="bg-white/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-white/5">${ai.description}</div>`;
 
             content.innerHTML = `
@@ -315,7 +528,7 @@
                             <p class="text-sky-400 font-bold mb-6 italic opacity-80">${ai.type}</p>
                             <div class="space-y-4">
                                 ${descriptionHTML}
-                                <div class="bg-sky-500/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-sky-500/10">${ai.usage}</div>
+                                <div class="bg-sky-500/5 p-6 rounded-[2rem] text-slate-300 text-sm border border-sky-500/10">${ai.usage || '非公開の用途に使用されます。'}</div>
                             </div>
                         </div>
                     </div>
@@ -324,7 +537,7 @@
                         ${renderStat('Logic', ai.status.logic, ai.color)}
                         ${renderStat('Speed', speedPercent, ai.color, ai.status.speed + ' tps')}
                         ${renderStat('Creativity', ai.status.creative, ai.color)}
-                        ${renderStat('CP Value', Math.min(ai.status.value, 100), ai.color, (ai.status.value || 0) + ' t/¥')}
+                        ${renderStat('Utility', ai.status.utility || 50, ai.color)}
                     </div>
                     
                     <div class="px-8 py-4 rounded-[2rem] bg-sky-500/5 border border-sky-500/10 flex items-center gap-4">
