@@ -271,12 +271,21 @@
                     <h4 class="text-xl font-bold mb-10 pixel-font uppercase tracking-widest text-sky-500/60 border-b border-sky-500/10 pb-4">Changelog</h4>
                     <div class="space-y-4">
                         <div class="changelog-item">
-                            <div class="font-bold text-lg">Ver 0.4</div>
-                            <p class="text-sm opacity-60">各AIに「作者（Author）」項目を追加。検索フィルターを作者名にも対応。詳細表示のUIを拡張。</p>
+                            <div class="font-bold text-lg">Ver 0.1</div>
+                            <p class="text-sm opacity-60 text-sky-500/80 font-bold mb-1">2026/02/10</p>
+                            <p class="text-sm opacity-60">基本システム実装。AIデータカード化と検索・ソート機能のプロトタイプ構築。基本レイアウトの策定。</p>
+                        </div>
+                        <div class="changelog-item">
+                            <div class="font-bold text-lg">Ver 0.2</div>
+                            <p class="text-sm opacity-60">スキャンアニメーション付きローディング画面の実装。ダークモード/ライトモードの切り替え機能追加。</p>
                         </div>
                         <div class="changelog-item">
                             <div class="font-bold text-lg">Ver 0.3</div>
-                            <p class="text-sm opacity-60">About Usページ統合。チェンジログ追加。ホーム戻るボタンの追加と白紙バグの修正。</p>
+                            <p class="text-sm opacity-60">About Usページ統合。ページ遷移時の白紙バグ修正。「ホームへ戻る」ボタンの設置。</p>
+                        </div>
+                        <div class="changelog-item">
+                            <div class="font-bold text-lg">Ver 0.4</div>
+                            <p class="text-sm opacity-60">各AIに「作者（Author）」項目を追加。外部データファイル（ai_data.json）の読み込みに対応。UI全体のブラッシュアップ。</p>
                         </div>
                     </div>
                 </div>
@@ -303,7 +312,7 @@
         let aiData = [];
         let filteredData = [];
 
-        // 作者(author)フィールドを追加
+        // フォールバック用の初期データ (JSON読み込み失敗時に使用)
         const fallbackData = [
             { "no": "U-1.0", "name": "Unfidmatk-AI", "type": "未解読記号生成知能", "author": "Dr. Vesper", "rarity": "Abstract", "description": "存在しない言語を生成し続けるAI。視覚的暗号としても機能する。そのアルゴリズムは古代の粘土板から着想を得ているという説がある。", "status": { "logic": 40, "creative": 95, "speed": 15 }, "color": "#f87171", "icon": "🖋️" },
             { "no": "V-03", "name": "Aletheia", "type": "真実性検証知能", "author": "Ethics Council", "rarity": "Ethical", "description": "情報の信頼性を確率で算出する。情報の濁りを排除し、デジタル上の嘘を無効化するために開発された防衛プログラム。", "status": { "logic": 99, "creative": 10, "speed": 45 }, "color": "#60a5fa", "icon": "⚖️" },
@@ -338,17 +347,36 @@
             document.getElementById('theme-icon-moon').classList.toggle('hidden', isLight);
         }
 
+        // JSON Data Fetching
+        async function loadAIData() {
+            try {
+                const response = await fetch('./ai_data.json');
+                if (!response.ok) throw new Error('Failed to load JSON');
+                const data = await response.json();
+                aiData = data;
+                console.log('Data loaded from JSON');
+            } catch (error) {
+                console.warn('Using fallback data:', error);
+                aiData = fallbackData;
+            }
+            filteredData = [...aiData];
+            renderGrid();
+        }
+
         // Loading
         async function runLoading() {
             const screen = document.getElementById('loading-screen');
             const bar = document.getElementById('loader-progress');
             const log = document.getElementById('loader-log');
-            const sequence = ["ACCESSING...", "DECRYPTING...", "PARSING AUTHORS...", "COMPLETED."];
+            const sequence = ["ACCESSING...", "DECRYPTING...", "PARSING JSON...", "FETCHING ASSETS...", "COMPLETED."];
             
+            // データの読み込み開始
+            await loadAIData();
+
             for (let i = 0; i < sequence.length; i++) {
                 log.textContent = sequence[i];
-                bar.style.width = ((i + 1) * 25) + '%';
-                await new Promise(r => setTimeout(r, 200 + Math.random() * 200));
+                bar.style.width = ((i + 1) * 20) + '%';
+                await new Promise(r => setTimeout(r, 150 + Math.random() * 150));
             }
             screen.style.opacity = '0';
             setTimeout(() => screen.style.display = 'none', 800);
@@ -374,7 +402,6 @@
         function handleFilter() {
             const q = document.getElementById('search-query').value.toLowerCase();
             const sort = document.getElementById('sort-order').value;
-            // 名前、タイプ、作者で検索可能に
             filteredData = aiData.filter(a => 
                 a.name.toLowerCase().includes(q) || 
                 a.type.toLowerCase().includes(q) || 
@@ -383,8 +410,8 @@
             
             filteredData.sort((a, b) => {
                 if (sort === 'no') return a.no.localeCompare(b.no);
-                if (sort === 'logic') return b.status.logic - a.status.logic;
-                return b.status.speed - a.status.speed;
+                if (sort === 'logic') return (b.status?.logic || 0) - (a.status?.logic || 0);
+                return (b.status?.speed || 0) - (a.status?.speed || 0);
             });
             renderGrid();
         }
@@ -410,9 +437,9 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-white/10">
-                        ${renderStat('Logic', ai.status.logic, ai.color)}
-                        ${renderStat('Speed', ai.status.speed, ai.color, ai.status.speed + ' tps')}
-                        ${renderStat('Creative', ai.status.creative, ai.color)}
+                        ${renderStat('Logic', ai.status?.logic || 0, ai.color)}
+                        ${renderStat('Speed', ai.status?.speed || 0, ai.color, (ai.status?.speed || 0) + ' tps')}
+                        ${renderStat('Creative', ai.status?.creative || 0, ai.color)}
                     </div>
                 </div>
             `;
@@ -441,10 +468,6 @@
             const isLight = savedTheme === 'light';
             if (isLight) document.body.classList.add('light-mode');
             updateThemeIcons(isLight);
-            
-            aiData = fallbackData;
-            filteredData = [...aiData];
-            renderGrid();
             
             document.getElementById('search-query').addEventListener('input', handleFilter);
             document.getElementById('sort-order').addEventListener('change', handleFilter);
