@@ -16,7 +16,7 @@
     "isImage": true,
     "author":"不明？　元ネタT.S.さん"
     },
-    {
+      {
     "no": "P-09",
     "name": "Pulse-Dreamer",
     "type": "睡眠誘導・夢設計知能",
@@ -31,7 +31,7 @@
     "icon": "🌙",
     "author":"日本睡眠協会"
     
-    },
+      },
     {
     "no": "33",
     "name": "Empty-Server Ghost",
@@ -45,7 +45,7 @@
     "speedCompare": "1文字ずつポツポツと打つような、消え入りそうな遅さ",
     "color": "#94a3b8",
     "icon": "💾",
-      "author":"不明"
+      "author":"不明"
     },
     {
     "no": "V-03",
@@ -60,7 +60,7 @@
     "speedCompare": "膨大な公文書を高速でめくり、矛盾点を次々と赤ペンでチェックする速さ",
     "color": "#60a5fa",
     "icon": "⚖️"},
-      {
+      {
     "no": "S-77",
     "name": "Synapse-Mirror",
     "type": "人格模倣・反射知能",
@@ -73,7 +73,7 @@
     "speedCompare": "心拍と同じテンポで言葉が返る速さ",
     "color": "#34d399",
     "icon": "🧠",
-        "author":"NR大学"
+        "author":"NR大学"
     
     },
     {
@@ -89,7 +89,7 @@
     "speedCompare": "全速前進、波を切り裂き目標へ突撃する速さ",
     "color": "#475569",
     "icon": "⚓",
-        "author":"不明"
+        "author":"不明"
     
     },
     {
@@ -105,7 +105,7 @@
     "speedCompare": "霧の中に浮かぶ文字を一つずつ拾い集めるような遅さ",
     "color": "#a5b4fc",
     "icon": "🌫️",
-    "author":"不明"
+      "author":"不明"
     
     },
     {
@@ -121,7 +121,7 @@
     "speedCompare": "親友が隣で頷きながら話を聞くような心地よいテンポ",
     "color": "#fb923c",
     "icon": "🫂",
-    "author":"日本睡眠協会"
+          "author":"日本睡眠協会"
     
     },
     {
@@ -151,7 +151,7 @@
     "speedCompare": "1秒で文庫本数ページを書き換える速さ",
     "color": "#eab308",
     "icon": "☯️",
-        "author":"OpenAI and Google"
+        "author":"OpenAI and Google"
     
     },
     {
@@ -167,7 +167,7 @@
     "speedCompare": "瞬きひとつで数千文字を生成する神速の残像",
     "color": "#10b981",
     "icon": "✳️",
-     "author":"OpenAI"
+        "author":"OpenAI"
     },
     {
     "no": "L-01",
