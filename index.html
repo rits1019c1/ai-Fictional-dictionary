@@ -254,9 +254,28 @@
                 <h2 class="text-5xl md:text-7xl font-bold mb-6 pixel-font">About Us</h2>
                 <div class="h-1.5 w-16 bg-sky-500 mx-auto rounded-full"></div>
             </div>
-            <div class="bg-[var(--card-bg)] border border-[var(--border-color)] p-8 md:p-14 rounded-[3rem] shadow-2xl">
-                <h3 class="text-3xl font-bold mb-6 text-sky-500 pixel-font">ただの架空の辞書です</h3>
-                <p class="opacity-80 mb-10 text-lg leading-relaxed">このプロジェクトは、デジタルの海に漂う「存在しない知能」をアーカイブするためのものです。<br><span class="text-sky-400 font-bold">made by ritsuto</span></p>
+            <div class="bg-[var(--card-bg)] border border-[var(--border-color)] p-8 md:p-14 rounded-[3rem] shadow-2xl space-y-10">
+                <div>
+                    <h3 class="text-3xl font-bold mb-6 text-sky-500 pixel-font">ただの架空の辞書です</h3>
+                    <p class="opacity-80 mb-4 text-lg leading-relaxed">このプロジェクトは、デジタルの海に漂う「存在しない知能」をアーカイブするためのものです。</p>
+                    <div class="inline-block px-4 py-2 bg-sky-500/10 border border-sky-500/20 rounded-full">
+                        <span class="text-sky-400 font-bold pixel-font text-sm tracking-tighter">made by ritsuto (20XX 2/24)</span>
+                    </div>
+                </div>
+
+                <div class="pt-8 border-t border-white/5">
+                    <h4 class="text-xs uppercase tracking-[0.3em] font-bold text-white/40 mb-6 pixel-font">Update Logs</h4>
+                    <div class="space-y-4 text-sm">
+                        <div class="flex gap-4 group">
+                            <span class="text-sky-500 font-bold pixel-font">v1.0.0</span>
+                            <div class="flex-1">
+                                <div class="text-white font-bold mb-1">Archive Initialized</div>
+                                <p class="opacity-50 text-xs">基本システムの構築と初期データのインポート。図鑑閲覧、検索、お気に入り機能の実装。</p>
+                            </div>
+                            <span class="text-[10px] opacity-20 pixel-font mt-1">20XX.02.24</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="text-center">
                 <button onclick="switchView('home')" class="home-back-btn pixel-font text-xs uppercase tracking-widest font-bold">
@@ -322,12 +341,10 @@
             return `<span class="${customClass}">${ai.icon}</span>`;
         }
 
-        // タイピング速度をspeedの値に連動させる
         function typeWriter(element, text, speedParam) {
             element.innerHTML = "";
             element.classList.add('typing-cursor');
             let i = 0;
-            // speedが高いほど、待機時間(ms)を短くする (例: speed 100なら約20ms, speed 1なら約150ms)
             const calculatedSpeed = Math.max(10, 150 - (speedParam * 1.3));
             
             function type() {
@@ -348,7 +365,6 @@
                 if (!response.ok) throw new Error();
                 aiData = await response.json();
             } catch (error) {
-                // フォールバック用データ
                 aiData = [{
                     "no": "U-1.0",
                     "name": "Unfidmatk-AI 1.0",
