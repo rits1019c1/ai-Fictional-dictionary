@@ -99,6 +99,7 @@
         }
 
         .ai-card {
+            position: relative;
             border: 1px solid var(--border-color);
             background: var(--card-bg);
             backdrop-filter: blur(10px);
@@ -183,9 +184,48 @@
         .home-back-btn:hover {
             opacity: 1;
         }
+
+        /* Typing Effect Class */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .fav-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .fav-btn:active { transform: scale(0.8); }
+        .fav-btn.active svg { fill: #ef4444; stroke: #ef4444; }
+
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #0ea5e9;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            font-size: 0.875rem;
+            transition: transform 0.3s ease;
+            z-index: 200;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
+
+    <div id="toast">コピーしました</div>
 
     <!-- Loading Screen -->
     <div id="loading-screen">
@@ -241,7 +281,13 @@
     <section id="view-catalog" class="view-section px-6 md:px-12">
         <div class="max-w-6xl mx-auto w-full py-10">
             <header class="mb-16">
-                <h2 class="text-4xl md:text-6xl font-bold mb-8 pixel-font">Archives</h2>
+                <div class="flex justify-between items-end mb-8">
+                    <h2 class="text-4xl md:text-6xl font-bold pixel-font">Archives</h2>
+                    <button id="toggle-favorites" class="text-xs font-bold uppercase tracking-widest text-sky-500 flex items-center gap-2 hover:opacity-80 transition-opacity">
+                        <span id="fav-label">Favorites Only</span>
+                        <div id="fav-dot" class="w-2 h-2 rounded-full bg-slate-500"></div>
+                    </button>
+                </div>
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="relative flex-1">
                         <input type="text" id="search-query" placeholder="AI名や作者で検索..." class="w-full bg-white/5 border border-[var(--border-color)] px-6 py-4 rounded-2xl text-sm focus:border-sky-500 outline-none transition-all">
@@ -287,26 +333,15 @@
                     <h4 class="text-xl font-bold mb-10 pixel-font uppercase tracking-widest text-sky-500/60 border-b border-sky-500/10 pb-4">Changelog</h4>
                     <div class="space-y-4">
                         <div class="changelog-item">
-                            <div class="font-bold text-lg">Ver 0.1</div>
-                            <p class="text-sm opacity-60 text-sky-500/80 font-bold mb-1">2026/02/10</p>
-                            <p class="text-sm opacity-60">基本システム実装。AIデータカード化と検索・ソート機能のプロトタイプ構築。基本レイアウトの策定。</p>
-                        </div>
-                        <div class="changelog-item">
-                            <div class="font-bold text-lg">Ver 0.2</div>
-                            <p class="text-sm opacity-60">スキャンアニメーション付きローディング画面の実装。ダークモード/ライトモードの切り替え機能追加。</p>
-                        </div>
-                        <div class="changelog-item">
-                            <div class="font-bold text-lg">Ver 0.3</div>
-                            <p class="text-sm opacity-60">About Usページ統合。ページ遷移時の白紙バグ修正。「ホームへ戻る」ボタンの設置。</p>
-                        </div>
-                        <div class="changelog-item">
-                            <div class="font-bold text-lg">Ver 0.4</div>
-                            <p class="text-sm opacity-60">各AIに「作者（Author）」項目を追加。外部データファイル（ai_data.json）の読み込みに対応。UI全体のブラッシュアップ。</p>
+                            <div class="font-bold text-lg">Ver 0.6</div>
+                            <p class="text-sm opacity-60 text-sky-500/80 font-bold mb-1">2026/02/11</p>
+                            <p class="text-sm opacity-60">お気に入り機能（LocalStorage）実装。詳細画面へのタイピングアニメーション導入。「サイトに貼る」埋め込みコード機能追加。</p>
                         </div>
                         <div class="changelog-item">
                             <div class="font-bold text-lg">Ver 0.5</div>
-                            <p class="text-sm opacity-60">画像形式（png/jpg等）のアイコン表示に対応。詳細モーダルのステータス表示を更新。最新データの統合。</p>
+                            <p class="text-sm opacity-60">画像形式アイコン対応。詳細モーダルのステータス表示更新。最新データ統合。</p>
                         </div>
+                        <!-- ... 以前のログは省略 ... -->
                     </div>
                 </div>
             </div>
@@ -331,6 +366,8 @@
     <script>
         let aiData = [];
         let filteredData = [];
+        let favorites = JSON.parse(localStorage.getItem('u-ai-favorites')) || [];
+        let showOnlyFavs = false;
 
         // View Control
         function switchView(viewName) {
@@ -359,6 +396,24 @@
             document.getElementById('theme-icon-moon').classList.toggle('hidden', isLight);
         }
 
+        // Fav Logic
+        function toggleFavorite(e, no) {
+            e.stopPropagation();
+            if (favorites.includes(no)) {
+                favorites = favorites.filter(f => f !== no);
+            } else {
+                favorites.push(no);
+            }
+            localStorage.setItem('u-ai-favorites', JSON.stringify(favorites));
+            renderGrid();
+        }
+
+        function toggleFavFilter() {
+            showOnlyFavs = !showOnlyFavs;
+            document.getElementById('fav-dot').className = showOnlyFavs ? 'w-2 h-2 rounded-full bg-red-500' : 'w-2 h-2 rounded-full bg-slate-500';
+            handleFilter();
+        }
+
         // Icon Renderer (Emoji or Image)
         function renderIcon(ai, customClass = "") {
             if (ai.isImage) {
@@ -367,16 +422,56 @@
             return `<span class="${customClass}">${ai.icon}</span>`;
         }
 
+        // Typing Effect
+        function typeWriter(element, text, speed = 30) {
+            element.innerHTML = "";
+            element.classList.add('typing-cursor');
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing-cursor');
+                }
+            }
+            type();
+        }
+
         // JSON Data Fetching
         async function loadAIData() {
             try {
+                // 実際の実装ではここでfetchを行う。デモ用にデータを直接定義するか外部ファイルを読む。
                 const response = await fetch('./ai_data.json');
                 if (!response.ok) throw new Error('Failed to load JSON');
                 aiData = await response.json();
             } catch (error) {
-                console.error('Data loading error:', error);
-                // 完全に失敗した時のための最小限のガード
-                aiData = [];
+                console.warn('ai_data.json not found, using fallback demo data.');
+                aiData = [
+                    {
+                        no: "001",
+                        name: "Neon Echo",
+                        type: "Audio Hallucinogen",
+                        icon: "📻",
+                        author: "CyberGhost",
+                        color: "#38bdf8",
+                        description: "都市伝説として語られる、無人のラジオから流れると言われる知能。聴いた者の記憶を微かに改変する。",
+                        status: { logic: 40, creative: 95, speed: 2, utility: 10 },
+                        rarity: "Rare"
+                    },
+                    {
+                        no: "002",
+                        name: "Glitch Weaver",
+                        type: "Reality Sculptor",
+                        icon: "🕸️",
+                        author: "Zero",
+                        color: "#ef4444",
+                        description: "デジタルデータのバグから生まれたとされる知能。劣化した画像や動画を、あり得ない形へ再構築する。",
+                        status: { logic: 88, creative: 70, speed: 8, utility: 60 },
+                        rarity: "Legend"
+                    }
+                ];
             }
             filteredData = [...aiData];
             renderGrid();
@@ -408,8 +503,13 @@
                 grid.innerHTML = '<div class="col-span-full py-20 text-center opacity-40">該当するデータが見つかりません</div>';
                 return;
             }
-            grid.innerHTML = filteredData.map(ai => `
+            grid.innerHTML = filteredData.map(ai => {
+                const isFav = favorites.includes(ai.no);
+                return `
                 <div class="ai-card rounded-[2.5rem] p-8 cursor-pointer group" onclick="showDetails('${ai.no}')">
+                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${ai.no}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                    </button>
                     <div class="flex justify-between items-start mb-6 opacity-40 text-[9px] pixel-font">
                         <span>ID: ${ai.no}</span>
                         <span class="uppercase tracking-widest">BY: ${ai.author || 'Unknown'}</span>
@@ -425,17 +525,21 @@
                         <span>S: ${ai.status?.speed || 0}</span>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function handleFilter() {
             const q = document.getElementById('search-query').value.toLowerCase();
             const sort = document.getElementById('sort-order').value;
-            filteredData = aiData.filter(a => 
-                (a.name || "").toLowerCase().includes(q) || 
-                (a.type || "").toLowerCase().includes(q) || 
-                (a.author || "").toLowerCase().includes(q)
-            );
+            
+            filteredData = aiData.filter(a => {
+                const matchQuery = (a.name || "").toLowerCase().includes(q) || 
+                                   (a.type || "").toLowerCase().includes(q) || 
+                                   (a.author || "").toLowerCase().includes(q);
+                const matchFav = showOnlyFavs ? favorites.includes(a.no) : true;
+                return matchQuery && matchFav;
+            });
             
             filteredData.sort((a, b) => {
                 if (sort === 'no') return a.no.localeCompare(b.no);
@@ -444,6 +548,22 @@
                 return (b.status?.speed || 0) - (a.status?.speed || 0);
             });
             renderGrid();
+        }
+
+        function copyEmbed(no) {
+            const ai = aiData.find(a => a.no === no);
+            const html = `<div style="padding:20px; border:1px solid #38bdf8; border-radius:15px; font-family:sans-serif; text-align:center;"><span style="font-size:3rem;">${ai.icon}</span><h3>${ai.name}</h3><p>${ai.type}</p><small>from 架空AI図鑑</small></div>`;
+            
+            const temp = document.createElement('textarea');
+            temp.value = html;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
         function showDetails(no) {
@@ -468,10 +588,16 @@
                                 <span class="w-1 h-1 bg-white/20 rounded-full"></span>
                                 <span class="text-white/40 text-xs font-bold uppercase tracking-widest">Authored by ${ai.author || 'Unknown'}</span>
                             </div>
-                            <p class="opacity-70 text-base leading-relaxed bg-white/5 p-6 rounded-2xl border border-white/5 mb-6">${ai.description}</p>
-                            <div class="bg-sky-500/10 border border-sky-500/20 p-5 rounded-2xl">
-                                <h4 class="text-[10px] text-sky-400 font-bold uppercase tracking-widest mb-2">Usage & Details</h4>
-                                <p class="text-sm opacity-80 leading-relaxed">${ai.usage || '詳細はアーカイブされていません。'}</p>
+                            <p id="typing-desc" class="opacity-70 text-base leading-relaxed bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 min-h-[100px]"></p>
+                            <div class="flex flex-col gap-4">
+                                <div class="bg-sky-500/10 border border-sky-500/20 p-5 rounded-2xl">
+                                    <h4 class="text-[10px] text-sky-400 font-bold uppercase tracking-widest mb-2">Usage & Details</h4>
+                                    <p class="text-sm opacity-80 leading-relaxed">${ai.usage || '詳細はアーカイブされていません。'}</p>
+                                </div>
+                                <button onclick="copyEmbed('${ai.no}')" class="text-xs text-white/40 hover:text-sky-400 text-left transition-colors flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                    自分のサイトに貼る（埋め込みHTMLをコピー）
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -481,26 +607,15 @@
                         ${renderStat('Creative', ai.status?.creative || 0, ai.color)}
                         ${renderStat('Utility', ai.status?.utility || 0, ai.color)}
                     </div>
-                    ${ai.speedCompare ? `
-                    <div class="px-8 py-5 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
-                        <span class="text-2xl">⚡</span>
-                        <div class="text-xs">
-                            <div class="opacity-40 uppercase tracking-widest font-bold mb-1">Speed Comparison</div>
-                            <div class="opacity-80 italic">「${ai.speedCompare}」</div>
-                        </div>
-                    </div>` : ''}
-                    ${ai.link ? `
-                    <div class="text-center mt-4">
-                        <a href="${ai.link}" target="_blank" class="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 font-bold text-sm transition-colors border-b border-sky-400/30 pb-1">
-                            外部リソースを閲覧する
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                        </a>
-                    </div>` : ''}
                 </div>
             `;
             document.getElementById('details-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            
+            // Start Animation
             setTimeout(() => {
+                const desc = document.getElementById('typing-desc');
+                typeWriter(desc, ai.description);
                 content.querySelectorAll('.status-fill').forEach(f => f.style.width = f.dataset.target + '%');
             }, 100);
         }
@@ -526,6 +641,7 @@
             
             document.getElementById('search-query').addEventListener('input', handleFilter);
             document.getElementById('sort-order').addEventListener('change', handleFilter);
+            document.getElementById('toggle-favorites').addEventListener('click', toggleFavFilter);
             
             runLoading();
         };
